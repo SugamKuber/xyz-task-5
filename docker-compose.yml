@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=adminpassword
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  slack-message-processor:
+    build: .
+    depends_on:
+      - rabbitmq
+    environment:
+      - DB_URI=${DB_URI}
+      - RABBITMQ_URL=amqp://admin:adminpassword@rabbitmq:5672/
+      - SLACK_TOKEN=${SLACK_TOKEN}
+      - SLACK_BOT_USER_ID=${SLACK_BOT_USER_ID}
+      - SLACK_API_URI=${SLACK_API_URI}
+    volumes:
+      - .env:/root/.env
+
+volumes:
+  rabbitmq_data:
